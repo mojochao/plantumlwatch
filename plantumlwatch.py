@@ -89,7 +89,7 @@ class PlantUmlFileModifiedHandler(FileSystemEventHandler):
         :type filename: str
         
         '''
-        print('processing model file: {0}'.format(os.path.join(self.directory, filename)))
+        print('processing model source: {0}'.format(os.path.join(self.directory, filename)))
         try:
             exit_code = subprocess.call(self.plantuml_command(filename))
             if exit_code == 0:
