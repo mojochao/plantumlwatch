@@ -1,4 +1,4 @@
-plantumlwatch
-=============
+PlantUML-Watch
+==============
 
-A Python application to watch a directory for modifications to PlantUML source files and generate UML diagrams from them on change.
+Python watchdog script to monitor current working directory for changes to PlantUML source files and generate diagrams from them when modified.
