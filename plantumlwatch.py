@@ -25,9 +25,12 @@ or SVG format, when modified.
 '''
 VALID_OUTPUT_FORMATS = ['png', 'svg']
 DEFAULT_OUTPUT_FORMAT = VALID_OUTPUT_FORMATS[0]
-DEFAULT_JAVA_JVM = 'java'
-DEFAULT_PLANTUML_JAR = os.path.join(os.path.expanduser('~'), 'plantuml.jar')
 DEFAULT_DIRECTORY = os.getcwd()
+DEFAULT_JAVA_JVM = 'java'
+DEFAULT_PLANTUML_JAR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'dist', 'plantuml.jar'))
+if not os.path.exists(DEFAULT_PLANTUML_JAR):
+    DEFAULT_PLANTUML_JAR = os.path.abspath(os.path.join(os.path.expanduser('~'), 'plantuml.jar'))
+
 
 
 class PlantUmlFileModifiedHandler(FileSystemEventHandler):
@@ -127,8 +130,10 @@ def watch(directory='.', verbose=False, output=DEFAULT_OUTPUT_FORMAT, java=DEFAU
     if not os.path.exists(plantuml):
         print('error: cannot find file: {0}\nexiting'.format(plantuml))
         sys.exit(1)
-
+    
     print('watching directory: {0}'.format(directory))
+    if verbose:
+        print('using plantuml jar: {0}'.format(plantuml))
     
     event_handler = PlantUmlFileModifiedHandler(directory, verbose, output, java, plantuml)
     observer = Observer()
