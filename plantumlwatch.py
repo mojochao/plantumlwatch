@@ -30,7 +30,7 @@ DEFAULT_JAVA_JVM = 'java'
 DEFAULT_PLANTUML_JAR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'dist', 'plantuml.jar'))
 if not os.path.exists(DEFAULT_PLANTUML_JAR):
     DEFAULT_PLANTUML_JAR = os.path.abspath(os.path.join(os.path.expanduser('~'), 'plantuml.jar'))
-
+PLANTUML_SOURCE_FILE_EXT = '.pu'
 
 
 class PlantUmlFileModifiedHandler(FileSystemEventHandler):
@@ -82,25 +82,17 @@ class PlantUmlFileModifiedHandler(FileSystemEventHandler):
         :type event: :class:`watchdog.events.FileModifiedEvent`
 
         '''
-        if event.src_path.endswith('pu'):
-            self.generate_diagram(event.src_path)
-
-    def generate_diagram(self, filename):
-        '''Generate new UML diagram for PlantUML source file
-        
-        :param filename: name of PlantUML source file to generate diagram for
-        :type filename: str
-        
-        '''
-        print('processing model source: {0}'.format(os.path.join(self.directory, filename)))
-        try:
-            exit_code = subprocess.call(self.plantuml_command(filename))
-            if exit_code == 0:
-                print('generated model diagram: {0}'.format(filename.replace('.pu', '.{0}'.format(self.output))))
-            else:
-                print('error: exit code {0} processing file {1}'.format(exit_code, filename))
-        except OSError as err:
-            print('error: {0}'.format(err))
+        filename = event.src_path
+        if filename.endswith(PLANTUML_SOURCE_FILE_EXT):
+            print('processing model source: {0}'.format(os.path.join(self.directory, filename)))
+            try:
+                exit_code = subprocess.call(self.plantuml_command(filename))
+                if exit_code == 0:
+                    print('generated model diagram: {0}'.format(filename.replace(PLANTUML_SOURCE_FILE_EXT, '.{0}'.format(self.output))))
+                else:
+                    print('error: exit code {0} processing file {1}'.format(exit_code, filename))
+            except OSError as err:
+                print('error: {0}'.format(err))
 
 
 def watch(directory='.', verbose=False, output=DEFAULT_OUTPUT_FORMAT, java=DEFAULT_JAVA_JVM, plantuml=DEFAULT_PLANTUML_JAR):
