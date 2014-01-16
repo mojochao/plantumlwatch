@@ -140,7 +140,7 @@ def watch(directory='.', verbose=False, output=DEFAULT_OUTPUT_FORMAT, java=DEFAU
 
 
 if __name__ == '__main__':
-    '''plantuml module main entrypoint.'''    
+    '''plantumlwatch module main entrypoint.'''    
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument('-d', '--directory', default=DEFAULT_DIRECTORY, help='directory to watch', metavar='PATH')
     parser.add_argument('-v', '--verbose', action='store_true', help='enable verbose output')
