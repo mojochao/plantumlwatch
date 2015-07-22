@@ -1,5 +1,7 @@
+.idea
 .project
 .pydevproject
 build/
 dist/
 plantumlwatch.egg-info/
+venv/

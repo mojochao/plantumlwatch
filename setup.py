@@ -9,7 +9,7 @@ generate UML diagrams from them.
 
 setup(
     name="plantumlwatch",
-    version="0.0.1",
+    version="1.0.0",
     author="Allen Gooch",
     author_email="allen.gooch@gmail.com",
     description=DESCRIPTION,
