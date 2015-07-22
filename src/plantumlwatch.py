@@ -31,7 +31,7 @@ or SVG format, when modified.
 
 DEFAULT_VERBOSE = False
 DEFAULT_JAVA = "java"
-DEFAULT_PLANTUML = "plantuml"
+DEFAULT_PLANTUML = "plantuml.jar"
 DEFAULT_WATCH_DIRECTORY = os.getcwd()
 DEFAULT_WATCH_EXTENSION = "pu"
 DEFAULT_OUTPUT_DIRECTORY = os.getcwd()
@@ -50,16 +50,67 @@ DEFAULT_CONFIGURATION = {
 VALID_OUTPUT_FORMATS = ["png", "svg"]
 
 
+def configuration(argopts):
+    """Configuration object builder.
+
+    Returns configuration object built from multiple configuration sources.
+
+    A sample JSON configuration object might look like the following:
+
+        {
+            "verbose": false,
+            "java": "/usr/local/bin/java",
+            "plantuml": "~/lib/plantuml.8024.jar",
+            "watchdir": ".",
+            "extension": "*.pu",
+            "outputdir": "~/myoutputdir",
+            "format": "png"
+        }
+
+    The configuration object is built by successively loading these values from:
+    1. the default object
+    2. the object deserialized from user's home .plantumlwatch file, if exists
+    3. the object deserialized from .plantumlwatch file in current working directory, if exists
+    4. the object built from command line options
+
+    :param argopts: arguments passed on command line
+    :type argopts: dict
+
+    :returns: app configuration
+    :rtype: dict
+
+    """
+    config = dict(DEFAULT_CONFIGURATION)
+
+    config_filenames = [
+        os.path.expanduser("~/{}".format(CONFIGURATION_FILE_NAME)),
+        os.path.abspath("./{}".format(CONFIGURATION_FILE_NAME))
+    ]
+    for filename in config_filenames:
+        if os.path.isfile(filename):
+            try:
+                with open(filename) as infile:
+                    global_configuration = json.load(infile)
+                config.update(global_configuration)
+            except ValueError as err:
+                raise RuntimeError("configuration file {} is not a valid json file: {}".format(filename, err))
+
+    if argopts is not None:
+        config.update(argopts)
+
+    return config
+
+
 class PlantUmlFileModifiedHandler(FileSystemEventHandler):
     """Handler class for PlantUML source file modifications.
-    
+
     This handler generates UML diagrams on PlantUML source file modifications.
-    
+
     """
-    
+
     def __init__(self, watcher):
         """Initialize new PlantUmlFileHandler object.
-        
+
         :param watcher: Watcher associated with this file modification handler
         :type watcher: :class:`plantumlwatch.Watcher`
 
@@ -74,7 +125,7 @@ class PlantUmlFileModifiedHandler(FileSystemEventHandler):
 
         :returns: PlantUML command line to generate image for *filename*
         :rtype: string
-        
+
         """
         return "{java} -jar {plantuml} {verbose} {format} {srcfile}".format(
             java=self._watcher.java,
@@ -82,12 +133,12 @@ class PlantUmlFileModifiedHandler(FileSystemEventHandler):
             verbose="-v" if self._watcher.verbose else "",
             format="-t{}".format(self._watcher.format),
             srcfile=filename)
-        
+
     def on_modified(self, event):
         """File modification event handler.
-        
+
         Generates new diagrams if file modified is a PlantUML source file.
-        
+
         :param event: watchdog file modification event
         :type event: :class:`watchdog.events.FileModifiedEvent`
 
@@ -108,90 +159,20 @@ class PlantUmlFileModifiedHandler(FileSystemEventHandler):
                 print("error: {}".format(err))
 
 
-class Configurator(object):
-    """Application configurator.
-
-    This class is responsible for generating Watcher configurations.
-    A Watcher configuration is a nested dictionary structure, persisted as
-    JSON objects.
-
-    A sample JSON configuration object might look like the following:
-
-    {
-        "verbose": false,
-        "java": "/usr/local/bin/java",
-        "plantuml": "~/lib/plantuml.8024.jar",
-        "watchdir": ".",
-        "extension": "*.pu",
-        "outputdir": "~/myoutputdir",
-        "format": "png"
-    }
-
-    The configuration object is built by successively loading these values from:
-    1. the default object
-    2. the object deserialized from user's home .plantumlwatch file, if exists
-    3. the object deserialized from .plantumlwatch file in current working directory, if exists
-    4. the object built from command line options
-
-    """
-
-    def __init__(self, argopts=None):
-        """Initializes a new Configurator object.
-
-        :param argopts: arguments passed on command line
-        :type argopts: dict
-
-        """
-        # Start by basing our configuration on defaults.
-        configuration = dict(DEFAULT_CONFIGURATION)
-
-        # Update our configuration based on the user"s global configuration in home directory
-        # and any local configuration in current working directory
-        config_filenames = [
-            os.path.expanduser("~/{}".format(CONFIGURATION_FILE_NAME)),
-            os.path.abspath("./{}".format(CONFIGURATION_FILE_NAME))
-        ]
-        for filename in config_filenames:
-            if os.path.isfile(filename):
-                try:
-                    with open(filename) as infile:
-                        global_configuration = json.load(infile)
-                    configuration.update(global_configuration)
-                except ValueError as err:
-                    raise RuntimeError("configuration file {} is not a valid json file: {}".format(filename, err))
-
-        # Update with any options passed on command line
-        if argopts is not None:
-            configuration.update(argopts)
-
-        # We're done
-        self._configuration = configuration
-
-    @property
-    def configuration(self):
-        """Configuration accessor.
-
-        :returns: app configuration
-        :rtype: dict
-
-        """
-        return self._configuration
-
-
 class Watcher(object):
 
-    def __init__(self, configuration):
+    def __init__(self, config):
         """Initializes a new Watcher object.
 
         Watchers are responsible for configuring themselves, and when run
         watching those files for changes and generating new output.
 
-        :param configuration: configuration object
-        :type configuration: dict
+        :param config: configuration object
+        :type config: dict
 
         """
 
-        self._configuration = configuration
+        self._configuration = config
         if not os.path.isfile(self.java):
             raise RuntimeError("cannot find Java Virtual Machine binary '{}'".format(self.java))
         if not os.path.isfile(self.plantuml):
@@ -289,8 +270,8 @@ def main():
 
     # Configure and run the watcher.
     try:
-        configurator = Configurator(args)
-        watcher = Watcher(configurator.configuration)
+        config = configuration(args)
+        watcher = Watcher(config)
         watcher.run()
     except Exception as err:
         sys.exit("error: {}".format(err))
