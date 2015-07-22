@@ -101,7 +101,7 @@ def configuration(argopts):
     return config
 
 
-class PlantUmlFileModifiedHandler(FileSystemEventHandler):
+class WatcherFileChangeHandler(FileSystemEventHandler):
     """Handler class for PlantUML source file modifications.
 
     This handler generates UML diagrams on PlantUML source file modifications.
@@ -221,7 +221,7 @@ class Watcher(object):
             print("using plantuml: {}".format(self.plantuml))
 
         # Set up the watcher and wait on file modifications.
-        event_handler = PlantUmlFileModifiedHandler(self)
+        event_handler = WatcherFileChangeHandler(self)
         observer = Observer()
         observer.schedule(event_handler, path=self.watchdir)
         observer.start()
