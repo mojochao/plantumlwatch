@@ -255,16 +255,16 @@ def main():
                         metavar="PATH")
     parser.add_argument("-e", "--extension",
                         default=DEFAULT_WATCH_EXTENSION,
-                        help="directory to watch",
+                        help="extension of files to watch",
                         metavar="PATH")
     parser.add_argument("-o", "--outputdir",
                         default=DEFAULT_OUTPUT_DIRECTORY,
-                        help="directory to watch",
+                        help="directory to write output to",
                         metavar="PATH")
     parser.add_argument("-f", "--format",
                         default=DEFAULT_OUTPUT_FORMAT,
                         choices=VALID_OUTPUT_FORMATS,
-                        help="diagram output format, either 'png' or 'svg'. defaults to 'png'",
+                        help="output format, either 'png' or 'svg'. defaults to 'png'",
                         metavar="FORMAT")
     args = vars(parser.parse_args())
 
