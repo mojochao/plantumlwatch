@@ -13,14 +13,18 @@ setup(
     author="Allen Gooch",
     author_email="allen.gooch@gmail.com",
     description=DESCRIPTION,
-    long_description=open(os.path.join(os.path.dirname(__file__), "README.md")).read(),
     license="BSD",
     keywords="uml",
     url="http://github.com/mojochao/plantumlwatch",
-    scripts=['plantumlwatch.py'],
+    py_modules=["plantumlwatch"],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Topic :: Utilities",
         "License :: OSI Approved :: BSD License",
     ],
+    entry_points={
+        "console_scripts": [
+            "plantumlwatch = plantumlwatch:main"
+        ]
+    }
 )
